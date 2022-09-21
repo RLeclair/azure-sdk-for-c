@@ -173,8 +173,9 @@ static void send_telemetry_messages_to_iot_hub(void)
     "{\"message_number\":4}", "{\"message_number\":5}",
   };
 
+  uint8_t message_count = 0;
   // Publish # of telemetry messages.
-  for (uint8_t message_count = 0; message_count < MAX_TELEMETRY_MESSAGE_COUNT; message_count++)
+  for (uint8_t i = 0; i < 50; i++)
   {
     rc = MQTTClient_publish(
         mqtt_client,
