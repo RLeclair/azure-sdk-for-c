@@ -31,6 +31,13 @@ AZ_NODISCARD az_result az_platform_sleep_msec(int32_t milliseconds)
   return AZ_OK;
 }
 
+void az_platform_critical_error()
+{
+  while(1)
+  {
+  }
+}
+
 AZ_NODISCARD az_result az_platform_get_random(int32_t* out_random)
 {
   _az_PRECONDITION_NOT_NULL(out_random);
