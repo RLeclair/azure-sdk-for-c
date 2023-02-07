@@ -45,7 +45,7 @@ AZ_NODISCARD az_result az_platform_timer_create(
 
 void az_platform_critical_error()
 {
-  while(1)
+  while (1)
   {
   }
 }

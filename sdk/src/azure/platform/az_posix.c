@@ -33,7 +33,7 @@ AZ_NODISCARD az_result az_platform_sleep_msec(int32_t milliseconds)
 
 void az_platform_critical_error()
 {
-  while(1)
+  while (1)
   {
   }
 }
@@ -70,8 +70,7 @@ AZ_NODISCARD az_result az_platform_timer_create(
   timer_handle->_internal.sev.sigev_notify_function = &_thread_handler;
   timer_handle->_internal.sev.sigev_value.sival_ptr = timer_handle;
 
-  if (0
-      != timer_create(
+  if (0 != timer_create(
           CLOCK_REALTIME, &timer_handle->_internal.sev, &timer_handle->_internal.timerid))
   {
     return AZ_ERROR_ARG;

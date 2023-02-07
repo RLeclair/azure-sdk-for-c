@@ -4,9 +4,9 @@
 #include "az_test_definitions.h"
 #include <azure/core/az_platform.h>
 #include <azure/core/az_result.h>
-
-#include <az_test_precondition.h>
 #include <azure/core/internal/az_precondition_internal.h>
+#include <azure/core/internal/az_config_internal.h>
+#include <az_test_precondition.h>
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -121,17 +121,15 @@ static void test_az_platform_sleep_msec_one_second(void** state)
 {
   (void)state;
 
-  int64_t test_clock_one = 0;
-  int64_t test_clock_two = 0;
-  int64_t test_expected_time = 1000;
+  int64_t test_clock_one = 0; // Time before sleep.
+  int64_t test_clock_two = 0; // Time after sleep.
+  int64_t test_expected_time = _az_TIME_MILLISECONDS_PER_SECOND;
 
   assert_int_equal(az_platform_clock_msec(&test_clock_one), AZ_OK);
-  assert_int_equal(az_platform_sleep_msec(1000), AZ_OK); // One second
+  assert_int_equal(az_platform_sleep_msec(_az_TIME_MILLISECONDS_PER_SECOND), AZ_OK);
   assert_int_equal(az_platform_clock_msec(&test_clock_two), AZ_OK);
-
-  int64_t test_actual_time = test_clock_two - test_clock_one;
   
-  assert_true(test_actual_time >= test_expected_time);
+  assert_true((test_clock_two - test_clock_one) >= test_expected_time);
 }
 
 static void test_az_platform_get_random_once(void** state)
@@ -149,22 +147,24 @@ static void test_az_platform_timer_one_sec(void** state)
   (void)state;
 
   az_platform_timer test_timer_handle;
-  int64_t test_clock_one = 0;
-  int64_t test_clock_two = 0;
-  int64_t test_expected_time = 1000;
+  int64_t test_clock_one = 0; // Time before timer start.
+  int64_t test_clock_two = 0; // Time after timer callback.
+  int64_t test_expected_time = _az_TIME_MICROSECONDS_PER_MILLISECOND;
 
+  // Create a one second timer.
   assert_int_equal(az_platform_timer_create(
         &test_timer_handle,
         _test_az_platform_timer_callback_set_time,
         &test_clock_two),
         AZ_OK);
   assert_int_equal(az_platform_clock_msec(&test_clock_one), AZ_OK);
-  assert_int_equal(az_platform_timer_start(&test_timer_handle, 1000), AZ_OK);
-  assert_int_equal(az_platform_sleep_msec(2000), AZ_OK);
+  assert_int_equal(az_platform_timer_start(
+        &test_timer_handle, _az_TIME_MICROSECONDS_PER_MILLISECOND), AZ_OK);
 
-  int64_t test_actual_time = test_clock_two - test_clock_one;
+  // Sleep for two seconds until after timer callback is triggered.
+  assert_int_equal(az_platform_sleep_msec(2 * _az_TIME_MICROSECONDS_PER_MILLISECOND), AZ_OK);
 
-  assert_true(test_actual_time >= test_expected_time);
+  assert_true((test_clock_two - test_clock_one) >= test_expected_time);
 
   assert_int_equal(az_platform_timer_destroy(&test_timer_handle), AZ_OK);
 }
