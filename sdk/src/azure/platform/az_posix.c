@@ -51,8 +51,8 @@ void _thread_handler(union sigval sv)
   az_platform_timer* timer_handle = sv.sival_ptr;
 
   _az_PRECONDITION_NOT_NULL(timer_handle);
-  _az_PRECONDITION_NOT_NULL(timer_handle->_internal.callback);
-  timer_handle->_internal.callback(timer_handle->_internal.sdk_data);
+  _az_PRECONDITION_NOT_NULL(timer_handle->callback);
+  timer_handle->callback(timer_handle->sdk_data);
 }
 
 AZ_NODISCARD az_result az_platform_timer_create(
@@ -63,8 +63,8 @@ AZ_NODISCARD az_result az_platform_timer_create(
   _az_PRECONDITION_NOT_NULL(timer_handle);
   memset(timer_handle, 0, sizeof(az_platform_timer));
 
-  timer_handle->_internal.callback = callback;
-  timer_handle->_internal.sdk_data = sdk_data;
+  timer_handle->callback = callback;
+  timer_handle->sdk_data = sdk_data;
 
   timer_handle->_internal.sev.sigev_notify = SIGEV_THREAD;
   timer_handle->_internal.sev.sigev_notify_function = &_thread_handler;
@@ -113,7 +113,7 @@ AZ_NODISCARD az_result az_platform_mutex_init(az_platform_mutex* mutex_handle)
 {
   _az_PRECONDITION_NOT_NULL(mutex_handle);
 
-  if (0 != pthread_mutex_init(mutex_handle, NULL))
+  if (0 != pthread_mutex_init(&(mutex_handle->mutex), NULL))
   {
     return AZ_ERROR_ARG;
   }
@@ -125,7 +125,7 @@ AZ_NODISCARD az_result az_platform_mutex_acquire(az_platform_mutex* mutex_handle
 {
   _az_PRECONDITION_NOT_NULL(mutex_handle);
 
-  if (0 != pthread_mutex_lock(mutex_handle))
+  if (0 != pthread_mutex_lock(&(mutex_handle->mutex)))
   {
     return AZ_ERROR_ARG;
   }
@@ -137,7 +137,7 @@ AZ_NODISCARD az_result az_platform_mutex_release(az_platform_mutex* mutex_handle
 {
   _az_PRECONDITION_NOT_NULL(mutex_handle);
 
-  if (0 != pthread_mutex_unlock(mutex_handle))
+  if (0 != pthread_mutex_unlock(&(mutex_handle->mutex)))
   {
     return AZ_ERROR_ARG;
   }
@@ -149,7 +149,7 @@ AZ_NODISCARD az_result az_platform_mutex_destroy(az_platform_mutex* mutex_handle
 {
   _az_PRECONDITION_NOT_NULL(mutex_handle);
 
-  if (0 != pthread_mutex_destroy(mutex_handle))
+  if (0 != pthread_mutex_destroy(&(mutex_handle->mutex)))
   {
     return AZ_ERROR_ARG;
   }

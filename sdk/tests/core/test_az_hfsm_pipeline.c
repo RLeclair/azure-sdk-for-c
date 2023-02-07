@@ -318,7 +318,7 @@ static void test_az_hfsm_pipeline_timer_create_cb_success(void** state)
   
   assert_int_equal(az_hfsm_pipeline_timer_create(&az_hfsm_pipeline_test, &test_timer), AZ_OK);
   assert_int_equal(az_platform_timer_start(&(test_timer.platform_timer), 0), AZ_OK);
-  test_timer.platform_timer._internal.callback(test_timer.platform_timer._internal.sdk_data);
+  test_timer.platform_timer.callback(test_timer.platform_timer.sdk_data);
   assert_true(timeout_0 == 1);
 }
 
@@ -331,7 +331,7 @@ static void test_az_hfsm_pipeline_timer_create_cb_failure(void** state)
 
   assert_int_equal(az_hfsm_pipeline_timer_create(&az_hfsm_pipeline_test, &test_timer), AZ_OK);
   assert_int_equal(az_platform_timer_start(&(test_timer.platform_timer), 0), AZ_OK);
-  test_timer.platform_timer._internal.callback(test_timer.platform_timer._internal.sdk_data);
+  test_timer.platform_timer.callback(test_timer.platform_timer.sdk_data);
   assert_true(timeout_0 == 2);
   assert_true(timeout_1 == 1);
 

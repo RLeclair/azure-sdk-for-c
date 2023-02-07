@@ -34,33 +34,36 @@
  */
 typedef void (*az_platform_timer_callback)(void* sdk_data);
 
-#if AZ_PLATFORM_IMPL == POSIX
 /**
- * @brief Platform timer definition specific to POSIX.
+ * @brief Platform timer definition.
  */
 typedef struct
 {
+    az_platform_timer_callback callback;
+    void* sdk_data;
     struct 
     {
-        az_platform_timer_callback callback;
-        void* sdk_data;
-
-        // POSIX specific
+#if AZ_PLATFORM_IMPL == POSIX
         timer_t timerid;
         struct sigevent sev;
         struct itimerspec trigger;
+#else //other AZ_PLATFORM_IMPL
+        void* platform_data;
+#endif
     } _internal;
 } az_platform_timer;
 
 /**
- * @brief Platform mutex definition specific to POSIX.
+ * @brief Platform mutex definition.
  */
-typedef pthread_mutex_t az_platform_mutex;
-
+typedef struct
+{
+#if AZ_PLATFORM_IMPL == POSIX
+    pthread_mutex_t mutex;
 #else //other AZ_PLATFORM_IMPL
-typedef void* az_platform_timer;
-typedef void* az_platform_mutex;
+    void* mutex;
 #endif
+} az_platform_mutex;
 
 /**
  * @brief Gets the platform clock in milliseconds.
