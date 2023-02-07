@@ -14,7 +14,6 @@
 
 #include <cmocka.h>
 
-//TODOR: Maybe add a definition for one second in milliseconds if there is not already one.
 
 static void _test_az_platform_timer_callback(void* sdk_data)
 {
