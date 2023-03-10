@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  // Mosquitto BUG: sleep required when connect async used on Windows.
+  // HFSM_TODO : Mosquitto BUG: sleep required when connect async used on Windows.
   //Sleep(500);
 
   /* Run the network loop in a background thread, this call returns quickly. */
