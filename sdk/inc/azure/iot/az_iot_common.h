@@ -36,6 +36,15 @@ enum az_result_iot
 
   /// While iterating, there are no more properties to return.
   AZ_ERROR_IOT_END_OF_PROPERTIES = _az_RESULT_MAKE_ERROR(_az_FACILITY_IOT, 2),
+
+  /// Service returned an error. (Also see #az_iot_status.)
+  AZ_ERROR_IOT_SERVICE = _az_RESULT_MAKE_ERROR(_az_FACILITY_IOT, 3),
+
+  /// Error caused by network operations
+  AZ_ERROR_IOT_NETWORK = _az_RESULT_MAKE_ERROR(_az_FACILITY_IOT, 4),
+
+  /// Error caused by a security check (e.g. TLS error, authentication error).
+  AZ_ERROR_IOT_SECURITY = _az_RESULT_MAKE_ERROR(_az_FACILITY_IOT, 5),
 };
 
 /**
@@ -50,6 +59,8 @@ enum az_log_classification_iot
   AZ_LOG_MQTT_RECEIVED_PAYLOAD
   = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT_MQTT, 2), ///< Accepted MQTT payload received.
 
+  AZ_LOG_HFSM_MQTT_STACK = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT_MQTT, 3),
+
   AZ_LOG_IOT_RETRY = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT, 1), ///< IoT Client retry.
 
   AZ_LOG_IOT_SAS_TOKEN
@@ -60,12 +71,25 @@ enum az_log_classification_iot
 
   AZ_LOG_IOT_ADU
   = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT, 4), ///< Azure IoT classification for ADU APIs.
+
+  AZ_LOG_HFSM_IOT_START
+  = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT, 5), ///< Azure IoT start event.
+
+  AZ_LOG_HFSM_IOT_ERROR
+  = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT, 6), ///< Azure IoT error event.
+
+  AZ_LOG_HFSM_IOT_PROVISIONING_DONE
+  = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_IOT, 7), ///< Azure IoT provisioning done event.
 };
 
 enum
 {
   AZ_IOT_DEFAULT_MQTT_CONNECT_PORT = 8883,
-  AZ_IOT_DEFAULT_MQTT_CONNECT_KEEPALIVE_SECONDS = 240
+  AZ_IOT_DEFAULT_MQTT_CONNECT_KEEPALIVE_SECONDS = 240,
+  AZ_IOT_DEFAULT_MIN_RETRY_DELAY_MSEC = 1000,
+  AZ_IOT_DEFAULT_MAX_RETRY_DELAY_MSEC = 100000,
+  AZ_IOT_DEFAULT_MAX_RETRY_JITTER_MSEC = 5000,
+  AZ_IOT_DEFAULT_MAX_HUB_RETRY = 10,
 };
 
 /**
