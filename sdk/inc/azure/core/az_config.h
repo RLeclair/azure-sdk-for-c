@@ -34,28 +34,6 @@ enum
   /// The MQTT keepalive in seconds.
   AZ_MQTT_KEEPALIVE_SECONDS = 240,
 
-  /// Maximum time in seconds that #az_mqtt_synchronous_process_loop should block.
-  AZ_MQTT_SYNC_MAX_POLLING_MILLISECONDS = 500,
-
-  /// SAS Token Lifetime in minutes
-  AZ_IOT_SAS_TOKEN_LIFETIME_MINUTES = 60,
-
-  // DPS Minimum Retry in seconds.
-  AZ_IOT_PROVISIONING_RETRY_MINIMUM_TIMEOUT_SECONDS = 3,
-
-  /// MQTT Maximum topic size in bytes.
-  AZ_IOT_MAX_TOPIC_SIZE = 128,
-  
-  AZ_IOT_MAX_PAYLOAD_SIZE = 256,
-
-  AZ_IOT_MAX_USERNAME_SIZE = 256,
-
-  AZ_IOT_MAX_PASSWORD_SIZE = 128,
-
-  AZ_IOT_MAX_CLIENT_ID_SIZE = 64,
-
-  AZ_IOT_MAX_HUB_NAME_SIZE = 128,
-
   // C-SDK Compat Layer maximum number of queued messages.
   AZ_IOT_COMPAT_CSDK_MAX_QUEUE_SIZE = 10,
 

@@ -4,8 +4,6 @@
 
 // Mosquitto Lib documentation is available at: https://mosquitto.org/api/files/mosquitto-h.html
 
-//"/home/raulleclair/pem/BaltimoreCyberTrustRoot.crt.pem",
-
 // Path to a PEM file containing the server trusted CA.
 #define MOSQUITTO_X509_TRUST_PEM_FILE_PATH "[ENTER TRUST FILE PATH]"
 // Path to a PEM file containing only the device certificate.
@@ -160,7 +158,7 @@ int main(int argc, char *argv[])
   rc = mosquitto_tls_set(
     mosq,
     MOSQUITTO_X509_TRUST_PEM_FILE_PATH,
-    NULL, //"S:\\cert\\RootCAs",
+    NULL,
     MOSQUITTO_X509_CERT_ONLY_PEM_FILE_PATH,
     MOSQUITTO_X509_KEY_PEM_FILE_PATH,
     NULL);
@@ -197,17 +195,6 @@ int main(int argc, char *argv[])
     mosquitto_destroy(mosq);
     fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
     return 1;
-  }
-
-  /* At this point the client is connected to the network socket, but may not
-   * have completed CONNECT/CONNACK.
-   * It is fairly safe to start queuing messages at this point, but if you
-   * want to be really sure you should wait until after a successful call to
-   * the connect callback.
-   * In this case we know it is 1 second before we start publishing.
-   */
-  while(running){
-    //publish_sensor_data(mosq);
   }
 
   mosquitto_lib_cleanup();
