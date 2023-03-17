@@ -121,6 +121,9 @@ if(NOT DEFINED ENV{AZ_SDK_C_NO_SAMPLES})
       add_subdirectory(sdk/samples/iot_mosquitto)
     endif()
   endif()
+  if(TRANSPORT_PAHO)
+    add_subdirectory(sdk/samples/iot_paho)
+  endif()
 endif()
 
 # default for Unit testing with cmocka is OFF, however, this will be ON on CI and tests must

@@ -1,25 +1,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "mosquitto.h"
+#include "time.h"
+#include "pthread.h"
+#include "signal.h"
+#include "string.h"
+#include "unistd.h"
 
 // Mosquitto Lib documentation is available at: https://mosquitto.org/api/files/mosquitto-h.html
 
-// Path to a PEM file containing the server trusted CA.
-#define MOSQUITTO_X509_TRUST_PEM_FILE_PATH "[ENTER TRUST FILE PATH]"
-// Path to a PEM file containing only the device certificate.
-#define MOSQUITTO_X509_CERT_ONLY_PEM_FILE_PATH "[ENTER CERT FILE PATH]"
-// Path to a PEM file containing only the device key.
-#define MOSQUITTO_X509_KEY_PEM_FILE_PATH "[ENTER KEY FILE PATH]"
-// IoT Hub hostname
-#define MOSQUITTO_IOT_HUB_HOSTNAME "[ENTER IOT HUB HOSTNAME]"
-// IoT Hub device name
-#define MOSQUITTO_IOT_HUB_DEVICENAME "[ENTER IOT HUB DEVICE NAME]"
-// Define Mosquitto username
-#define MOSQUITTO_USERNAME \
-  MOSQUITTO_IOT_HUB_HOSTNAME \
-  "/" \
-  MOSQUITTO_IOT_HUB_DEVICENAME \
-  "/?api-version=2020-09-30&DeviceClientType=azsdk-c%2F1.4.0-beta.1"
+#define MOSQUITTO_LOCAL_HOSTNAME "0.0.0.0"
+#define MOSQUITTO_TOPIC "test/multiple"
+#define MOSQUITTO_CLEAN 0
+
+#define NUM_THREADS 100
+#define WAIT_TIME_CREATE_THREAD_MS 10
+#define WAIT_TIME_MESSAGE_MS 100
+
+//#define PUBLISH_LOGS
 
 volatile bool running = true;
 
@@ -66,7 +64,9 @@ void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 void on_publish(struct mosquitto *mosq, void *obj, int mid)
 {
   (void)mosq; (void)obj, (void)mid;
+#ifdef PUBLISH_LOGS
   printf("MOSQ: Message with mid %d has been published.\n", mid);
+#endif // PUBLISH_LOGS
 }
 
 void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos)
@@ -125,78 +125,80 @@ void on_log(struct mosquitto *mosq, void *obj, int level, const char *str)
   printf("MOSQ [%s] %s\n", log_level, str);
 }
 
+void *mosquitto_client_test(void* arg)
+{
+  struct mosquitto *mosq = (struct mosquitto*) arg;
+  int rc;
+  char payload[5];
+
+  snprintf(payload, sizeof(payload), "%d", 123);
+
+  while(1){
+    rc = mosquitto_publish(mosq, NULL, MOSQUITTO_TOPIC, strlen(payload), payload, 0, false);
+    if(rc != MOSQ_ERR_SUCCESS){
+      fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
+    }
+    usleep(WAIT_TIME_MESSAGE_MS * 1000U);
+  }
+}
+
 int main(int argc, char *argv[])
 {
-  (void)argc; (void)argv;
-
   struct mosquitto *mosq;
-  int rc;
+  char client_name[] = "zancudo";
+	int rc;
 
-  /* Required before calling other mosquitto functions */
-  mosquitto_lib_init();
+	/* Required before calling other mosquitto functions */
+	mosquitto_lib_init();
 
-  /* Create a new client instance.
-   * id = NULL -> ask the broker to generate a client id for us
-   * clean session = true -> the broker should remove old sessions when we connect
-   * obj = NULL -> we aren't passing any of our private data for callbacks
-   */
-  mosq = mosquitto_new(MOSQUITTO_IOT_HUB_DEVICENAME, true, NULL);
+  mosq = mosquitto_new(client_name, MOSQUITTO_CLEAN, NULL);
   if(mosq == NULL){
-    fprintf(stderr, "Error: Out of memory.\n");
-    return 1;
-  }
-
-  /* Configure callbacks. This should be done before connecting ideally. */
-  mosquitto_log_callback_set(mosq, on_log);
+		fprintf(stderr, "Error: Out of memory.\n");
+		exit(1);
+	}
 
   mosquitto_connect_callback_set(mosq, on_connect);
+	mosquitto_publish_callback_set(mosq, on_publish);
   mosquitto_disconnect_callback_set(mosq, on_disconnect);
-  mosquitto_publish_callback_set(mosq, on_publish);
-  mosquitto_subscribe_callback_set(mosq, on_subscribe);
-  mosquitto_unsubscribe_callback_set(mosq, on_unsubscribe);
-  
-  rc = mosquitto_tls_set(
-    mosq,
-    MOSQUITTO_X509_TRUST_PEM_FILE_PATH,
-    NULL,
-    MOSQUITTO_X509_CERT_ONLY_PEM_FILE_PATH,
-    MOSQUITTO_X509_KEY_PEM_FILE_PATH,
-    NULL);
-  if (rc != MOSQ_ERR_SUCCESS)
-  {
-    mosquitto_destroy(mosq);
-    fprintf(stderr, "TLS Config Error: %s\n", mosquitto_strerror(rc));
-    return 1;
-  }
 
-  rc = mosquitto_username_pw_set(mosq, MOSQUITTO_USERNAME, "");
-  if (rc != MOSQ_ERR_SUCCESS)
-  {
-    mosquitto_destroy(mosq);
-    fprintf(stderr, "User/pass Config Error: %s\n", mosquitto_strerror(rc));
-    return 1;
-  }
+  rc = mosquitto_connect(mosq, MOSQUITTO_LOCAL_HOSTNAME, 1883, 60);
+	if(rc != MOSQ_ERR_SUCCESS){
+		mosquitto_destroy(mosq);
+		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
+		exit(1);
+	}
 
-  rc = mosquitto_connect_async(mosq, MOSQUITTO_IOT_HUB_HOSTNAME, 8883, 60);
-  if(rc != MOSQ_ERR_SUCCESS)
-  {
-    mosquitto_destroy(mosq);
-    fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
-    return 1;
-  }
-
-  // HFSM_TODO : Mosquitto BUG: sleep required when connect async used on Windows.
-  //Sleep(500);
-
-  /* Run the network loop in a background thread, this call returns quickly. */
   rc = mosquitto_loop_start(mosq);
-  if(rc != MOSQ_ERR_SUCCESS)
-  {
-    mosquitto_destroy(mosq);
-    fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
-    return 1;
-  }
+	if(rc != MOSQ_ERR_SUCCESS){
+		mosquitto_destroy(mosq);
+		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
+		exit(1);
+	}
 
-  mosquitto_lib_cleanup();
-  return 0;
+  rc = mosquitto_subscribe(mosq, NULL, MOSQUITTO_TOPIC, 0);
+  if(rc != MOSQ_ERR_SUCCESS){
+    mosquitto_destroy(mosq);
+		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
+		exit(1);
+  }
+  
+  pthread_t thid[NUM_THREADS];
+  int thcount = 0;
+
+  for (int i = 0; i < NUM_THREADS; i++)
+  {
+    printf("Creating thread number: %d\r\n", i);
+    if (pthread_create(&(thid[i]), NULL, mosquitto_client_test, mosq) != 0) {
+      perror("pthread_create() error");
+      exit(1);
+    }
+    usleep(WAIT_TIME_CREATE_THREAD_MS * 1000U);
+  }
+  
+	while(1){
+    sleep(10);
+	}
+
+	mosquitto_lib_cleanup();
+	return 0;
 }
