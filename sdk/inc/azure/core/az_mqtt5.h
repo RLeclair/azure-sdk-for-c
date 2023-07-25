@@ -4,13 +4,13 @@
 /**
  * @file
  *
- * @brief This header defines the types and functions your application uses to leverage MQTT pub/sub
- * functionality.
+ * @brief This header defines the types and functions your application uses to leverage MQTT v5
+ * pub/sub functionality.
  *
  * @details For more details on Azure IoT MQTT requirements please see
  * https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support.
  * - Outbound APIs will be called by the SDK to send data over the network.
- * - Inbound API calls must be called by the MQTT implementation to send data towards the SDK.
+ * - Inbound API calls must be called by the MQTT 5 implementation to send data towards the SDK.
  *
  * @note Object lifetime: all APIs have run-to-completion semantics. Data passed into the APIs
  *       is owned by the API for the duration of the call.
@@ -30,8 +30,8 @@
  * and they are subject to change in future versions of the SDK which would break your code.
  */
 
-#ifndef _az_MQTT_H
-#define _az_MQTT_H
+#ifndef _az_MQTT5_H
+#define _az_MQTT5_H
 
 #include <azure/core/az_config.h>
 #include <azure/core/az_event.h>
@@ -42,9 +42,9 @@
 #include <stdint.h>
 
 #if defined(TRANSPORT_MOSQUITTO)
-#include <azure/platform/az_mqtt_mosquitto.h>
+#include <azure/platform/az_mqtt5_mosquitto.h>
 #else
-#include <azure/platform/az_mqtt_notransport.h>
+#include <azure/platform/az_mqtt5_notransport.h>
 #endif
 
 #include <azure/core/_az_cfg_prefix.h>
@@ -55,11 +55,11 @@
 typedef enum
 {
   /// The key is stored in memory.
-  AZ_MQTT_X509_CLIENT_CERTIFICATE_KEY_MEMORY = 0,
+  AZ_MQTT5_X509_CLIENT_CERTIFICATE_KEY_MEMORY = 0,
 
   /// The key is stored in a security module.
-  AZ_MQTT_X509_CLIENT_CERTIFICATE_KEY_SECURITY_MODULE = 1,
-} az_mqtt_x509_client_certificate_key_type;
+  AZ_MQTT5_X509_CLIENT_CERTIFICATE_KEY_SECURITY_MODULE = 1,
+} az_mqtt5_x509_client_certificate_key_type;
 
 /**
  * @brief x509 certificate definition.
@@ -75,10 +75,10 @@ typedef struct
    * @brief The x509 certificate key.
    */
   az_span key;
-} az_mqtt_x509_client_certificate;
+} az_mqtt5_x509_client_certificate;
 
 /**
- * @brief MQTT publish data.
+ * @brief MQTT 5 publish data.
  *
  */
 typedef struct
@@ -96,7 +96,7 @@ typedef struct
   /**
    * @brief The ID of the publish request.
    *
-   * @details The MQTT stack should set this ID upon returning.
+   * @details The MQTT 5 stack should set this ID upon returning.
    */
   int32_t out_id;
 
@@ -104,10 +104,10 @@ typedef struct
    * @brief The quality of service of the publish request.
    */
   int8_t qos;
-} az_mqtt_pub_data;
+} az_mqtt5_pub_data;
 
 /**
- * @brief MQTT receive data.
+ * @brief MQTT 5 receive data.
  *
  */
 typedef struct
@@ -131,10 +131,10 @@ typedef struct
    * @brief The ID of the message.
    */
   int32_t id;
-} az_mqtt_recv_data;
+} az_mqtt5_recv_data;
 
 /**
- * @brief MQTT publish acknowledgement data.
+ * @brief MQTT 5 publish acknowledgement data.
  *
  */
 typedef struct
@@ -143,10 +143,10 @@ typedef struct
    * @brief The publish request ID.
    */
   int32_t id;
-} az_mqtt_puback_data;
+} az_mqtt5_puback_data;
 
 /**
- * @brief MQTT subscribe data.
+ * @brief MQTT 5 subscribe data.
  *
  */
 typedef struct
@@ -165,10 +165,10 @@ typedef struct
    * @brief Id to correlate the subscription request with the response acknowledgement.
    */
   int32_t out_id;
-} az_mqtt_sub_data;
+} az_mqtt5_sub_data;
 
 /**
- * @brief MQTT subscribe acknowledgement data.
+ * @brief MQTT 5 subscribe acknowledgement data.
  *
  */
 typedef struct
@@ -177,16 +177,16 @@ typedef struct
    * @brief The subscribe request ID.
    */
   int32_t id;
-} az_mqtt_suback_data;
+} az_mqtt5_suback_data;
 
 /**
- * @brief MQTT connect data.
+ * @brief MQTT 5 connect data.
  *
  */
 typedef struct
 {
   /**
-   * @brief Hostname or IP address of the MQTT broker.
+   * @brief Hostname or IP address of the MQTT 5 broker.
    */
   az_span host;
 
@@ -213,11 +213,11 @@ typedef struct
   /**
    * @brief The certificate to use for authentication.
    */
-  az_mqtt_x509_client_certificate certificate;
-} az_mqtt_connect_data;
+  az_mqtt5_x509_client_certificate certificate;
+} az_mqtt5_connect_data;
 
 /**
- * @brief MQTT connect acknowledgement data.
+ * @brief MQTT 5 connect acknowledgement data.
  *
  */
 typedef struct
@@ -231,10 +231,10 @@ typedef struct
    * @brief Indicates whether a TLS authentication error occurred.
    */
   bool tls_authentication_error;
-} az_mqtt_connack_data;
+} az_mqtt5_connack_data;
 
 /**
- * @brief MQTT disconnect data.
+ * @brief MQTT 5 disconnect data.
  *
  */
 typedef struct
@@ -248,218 +248,220 @@ typedef struct
    * @brief Indicates whether the disconnect was requested by the client.
    */
   bool disconnect_requested;
-} az_mqtt_disconnect_data;
+} az_mqtt5_disconnect_data;
 
 /**
- * @brief Log classifications for MQTT.
+ * @brief Log classifications for MQTT 5.
  *
  */
-enum az_log_classification_mqtt
+enum az_log_classification_mqtt5
 {
-  /// Log classification for MQTT.
-  AZ_LOG_MQTT_STACK = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_CORE_MQTT, 3),
+  /// Log classification for MQTT 5.
+  AZ_LOG_MQTT_STACK = _az_LOG_MAKE_CLASSIFICATION(_az_FACILITY_CORE_MQTT5, 3),
 };
 
 /**
- * @brief Azure MQTT HFSM event types.
+ * @brief Azure MQTT 5 HFSM event types.
  *
  */
-enum az_event_type_mqtt
+enum az_event_type_mqtt5
 {
-  /// MQTT Connect Request event.
-  AZ_MQTT_EVENT_CONNECT_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 10),
+  /// MQTT 5 Connect Request event.
+  AZ_MQTT5_EVENT_CONNECT_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 10),
 
-  /// MQTT Connect Response event.
-  AZ_MQTT_EVENT_CONNECT_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 11),
+  /// MQTT 5 Connect Response event.
+  AZ_MQTT5_EVENT_CONNECT_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 11),
 
-  /// MQTT Disconnect Request event.
-  AZ_MQTT_EVENT_DISCONNECT_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 12),
+  /// MQTT 5 Disconnect Request event.
+  AZ_MQTT5_EVENT_DISCONNECT_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 12),
 
-  /// MQTT Disconnect Response event.
-  AZ_MQTT_EVENT_DISCONNECT_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 13),
+  /// MQTT 5 Disconnect Response event.
+  AZ_MQTT5_EVENT_DISCONNECT_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 13),
 
-  /// MQTT Publish Receive Indication event.
-  AZ_MQTT_EVENT_PUB_RECV_IND = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 14),
+  /// MQTT 5 Publish Receive Indication event.
+  AZ_MQTT5_EVENT_PUB_RECV_IND = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 14),
 
-  /// MQTT Publish Request event.
-  AZ_MQTT_EVENT_PUB_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 15),
+  /// MQTT 5 Publish Request event.
+  AZ_MQTT5_EVENT_PUB_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 15),
 
-  /// MQTT Publish Acknowledge Response event.
-  AZ_MQTT_EVENT_PUBACK_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 16),
+  /// MQTT 5 Publish Acknowledge Response event.
+  AZ_MQTT5_EVENT_PUBACK_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 16),
 
-  /// MQTT Subscribe Request event.
-  AZ_MQTT_EVENT_SUB_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 17),
+  /// MQTT 5 Subscribe Request event.
+  AZ_MQTT5_EVENT_SUB_REQ = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 17),
 
-  /// MQTT Subscribe Acknowledge Response event.
-  AZ_MQTT_EVENT_SUBACK_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT, 18),
+  /// MQTT 5 Subscribe Acknowledge Response event.
+  AZ_MQTT5_EVENT_SUBACK_RSP = _az_MAKE_EVENT(_az_FACILITY_CORE_MQTT5, 18),
 };
 
 // Porting 1. The following functions must be called by the implementation when data is received:
 
 /**
- * @brief Posts a MQTT publish receive indication event to the event pipeline.
+ * @brief Posts a MQTT 5 publish receive indication event to the event pipeline.
  *
- * @param mqtt The MQTT instance.
- * @param recv_data The MQTT receive data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param recv_data The MQTT 5 receive data.
  *
  * @return An #az_result value indicating the result of the operation.
  *
  */
-AZ_NODISCARD AZ_INLINE az_result az_mqtt_inbound_recv(az_mqtt* mqtt, az_mqtt_recv_data* recv_data)
+AZ_NODISCARD AZ_INLINE az_result
+az_mqtt5_inbound_recv(az_mqtt5* mqtt5, az_mqtt5_recv_data* recv_data)
 {
-  _az_event_pipeline* pipeline = mqtt->_internal.platform_mqtt.pipeline;
+  _az_event_pipeline* pipeline = mqtt5->_internal.platform_mqtt5.pipeline;
   if (!pipeline)
   {
     return AZ_ERROR_NOT_IMPLEMENTED;
   }
 
   return _az_event_pipeline_post_inbound_event(
-      pipeline, (az_event){ .type = AZ_MQTT_EVENT_PUB_RECV_IND, .data = recv_data });
+      pipeline, (az_event){ .type = AZ_MQTT5_EVENT_PUB_RECV_IND, .data = recv_data });
 }
 
 /**
- * @brief Posts a MQTT connect acknowledgement event to the event pipeline.
+ * @brief Posts a MQTT 5 connect acknowledgement event to the event pipeline.
  *
- * @param mqtt The MQTT instance.
- * @param connack_data The MQTT connect acknowledgement data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param connack_data The MQTT 5 connect acknowledgement data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
 AZ_NODISCARD AZ_INLINE az_result
-az_mqtt_inbound_connack(az_mqtt* mqtt, az_mqtt_connack_data* connack_data)
+az_mqtt5_inbound_connack(az_mqtt5* mqtt5, az_mqtt5_connack_data* connack_data)
 {
-  _az_event_pipeline* pipeline = mqtt->_internal.platform_mqtt.pipeline;
+  _az_event_pipeline* pipeline = mqtt5->_internal.platform_mqtt5.pipeline;
   if (!pipeline)
   {
     return AZ_ERROR_NOT_IMPLEMENTED;
   }
 
   return _az_event_pipeline_post_inbound_event(
-      pipeline, (az_event){ .type = AZ_MQTT_EVENT_CONNECT_RSP, .data = connack_data });
+      pipeline, (az_event){ .type = AZ_MQTT5_EVENT_CONNECT_RSP, .data = connack_data });
 }
 
 /**
- * @brief Posts a MQTT subscribe acknowledgement event to the event pipeline.
+ * @brief Posts a MQTT 5 subscribe acknowledgement event to the event pipeline.
  *
- * @param mqtt The MQTT instance.
- * @param suback_data The MQTT subscribe acknowledgement data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param suback_data The MQTT 5 subscribe acknowledgement data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
 AZ_NODISCARD AZ_INLINE az_result
-az_mqtt_inbound_suback(az_mqtt* mqtt, az_mqtt_suback_data* suback_data)
+az_mqtt5_inbound_suback(az_mqtt5* mqtt5, az_mqtt5_suback_data* suback_data)
 {
-  _az_event_pipeline* pipeline = mqtt->_internal.platform_mqtt.pipeline;
+  _az_event_pipeline* pipeline = mqtt5->_internal.platform_mqtt5.pipeline;
   if (!pipeline)
   {
     return AZ_ERROR_NOT_IMPLEMENTED;
   }
 
   return _az_event_pipeline_post_inbound_event(
-      pipeline, (az_event){ .type = AZ_MQTT_EVENT_SUBACK_RSP, .data = suback_data });
+      pipeline, (az_event){ .type = AZ_MQTT5_EVENT_SUBACK_RSP, .data = suback_data });
 }
 
 /**
- * @brief Posts a MQTT publish acknowledgement event to the event pipeline.
+ * @brief Posts a MQTT 5 publish acknowledgement event to the event pipeline.
  *
- * @param mqtt The MQTT instance.
- * @param puback_data The MQTT publish acknowledgement data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param puback_data The MQTT 5 publish acknowledgement data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
 AZ_NODISCARD AZ_INLINE az_result
-az_mqtt_inbound_puback(az_mqtt* mqtt, az_mqtt_puback_data* puback_data)
+az_mqtt5_inbound_puback(az_mqtt5* mqtt5, az_mqtt5_puback_data* puback_data)
 {
-  _az_event_pipeline* pipeline = mqtt->_internal.platform_mqtt.pipeline;
+  _az_event_pipeline* pipeline = mqtt5->_internal.platform_mqtt5.pipeline;
   if (!pipeline)
   {
     return AZ_ERROR_NOT_IMPLEMENTED;
   }
 
   return _az_event_pipeline_post_inbound_event(
-      pipeline, (az_event){ .type = AZ_MQTT_EVENT_PUBACK_RSP, .data = puback_data });
+      pipeline, (az_event){ .type = AZ_MQTT5_EVENT_PUBACK_RSP, .data = puback_data });
 }
 
 /**
- * @brief Posts a MQTT disconnect response event to the event pipeline.
+ * @brief Posts a MQTT 5 disconnect response event to the event pipeline.
  *
- * @param mqtt The MQTT instance.
- * @param disconnect_data The MQTT disconnect response data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param disconnect_data The MQTT 5 disconnect response data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
 AZ_NODISCARD AZ_INLINE az_result
-az_mqtt_inbound_disconnect(az_mqtt* mqtt, az_mqtt_disconnect_data* disconnect_data)
+az_mqtt5_inbound_disconnect(az_mqtt5* mqtt5, az_mqtt5_disconnect_data* disconnect_data)
 {
-  _az_event_pipeline* pipeline = mqtt->_internal.platform_mqtt.pipeline;
+  _az_event_pipeline* pipeline = mqtt5->_internal.platform_mqtt5.pipeline;
   if (!pipeline)
   {
     return AZ_ERROR_NOT_IMPLEMENTED;
   }
 
   return _az_event_pipeline_post_inbound_event(
-      pipeline, (az_event){ .type = AZ_MQTT_EVENT_DISCONNECT_RSP, .data = disconnect_data });
+      pipeline, (az_event){ .type = AZ_MQTT5_EVENT_DISCONNECT_RSP, .data = disconnect_data });
 }
 
 // Porting 2. The following functions must be implemented and will be called by the SDK to
 //            send data:
 
 /**
- * @brief The default MQTT options.
+ * @brief The default MQTT 5 options.
  *
- * @return An #az_mqtt_options value.
+ * @return An #az_mqtt5_options value.
  */
-AZ_NODISCARD az_mqtt_options az_mqtt_options_default();
+AZ_NODISCARD az_mqtt5_options az_mqtt5_options_default();
 
 /**
- * @brief Initializes the MQTT instance.
+ * @brief Initializes the MQTT 5 instance.
  *
- * @param mqtt The MQTT instance.
- * @param options The MQTT options.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param options The MQTT 5 options.
  *
  * @return An #az_result value indicating the result of the operation.
  */
-AZ_NODISCARD az_result az_mqtt_init(az_mqtt* mqtt, az_mqtt_options const* options);
+AZ_NODISCARD az_result az_mqtt5_init(az_mqtt5* mqtt5, az_mqtt5_options const* options);
 
 /**
- * @brief Sends a MQTT connect data packet to broker.
+ * @brief Sends a MQTT 5 connect data packet to broker.
  *
- * @param mqtt The MQTT instance.
- * @param connect_data The MQTT connect data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param connect_data The MQTT 5 connect data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
-AZ_NODISCARD az_result az_mqtt_outbound_connect(az_mqtt* mqtt, az_mqtt_connect_data* connect_data);
+AZ_NODISCARD az_result
+az_mqtt5_outbound_connect(az_mqtt5* mqtt5, az_mqtt5_connect_data* connect_data);
 
 /**
- * @brief Sends a MQTT subscribe data packet to broker.
+ * @brief Sends a MQTT 5 subscribe data packet to broker.
  *
- * @param mqtt The MQTT instance.
- * @param sub_data The MQTT subscribe data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param sub_data The MQTT 5 subscribe data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
-AZ_NODISCARD az_result az_mqtt_outbound_sub(az_mqtt* mqtt, az_mqtt_sub_data* sub_data);
+AZ_NODISCARD az_result az_mqtt5_outbound_sub(az_mqtt5* mqtt5, az_mqtt5_sub_data* sub_data);
 
 /**
- * @brief Sends a MQTT publish data packet to broker.
+ * @brief Sends a MQTT 5 publish data packet to broker.
  *
- * @param mqtt The MQTT instance.
- * @param pub_data The MQTT publish data.
+ * @param mqtt5 The MQTT 5 instance.
+ * @param pub_data The MQTT 5 publish data.
  *
  * @return An #az_result value indicating the result of the operation.
  */
-AZ_NODISCARD az_result az_mqtt_outbound_pub(az_mqtt* mqtt, az_mqtt_pub_data* pub_data);
+AZ_NODISCARD az_result az_mqtt5_outbound_pub(az_mqtt5* mqtt5, az_mqtt5_pub_data* pub_data);
 
 /**
- * @brief Sends a MQTT disconnect to broker.
+ * @brief Sends a MQTT 5 disconnect to broker.
  *
- * @param mqtt The MQTT instance.
+ * @param mqtt5 The MQTT 5 instance.
  *
  * @return An #az_result value indicating the result of the operation.
  */
-AZ_NODISCARD az_result az_mqtt_outbound_disconnect(az_mqtt* mqtt);
+AZ_NODISCARD az_result az_mqtt5_outbound_disconnect(az_mqtt5* mqtt5);
 
 #include <azure/core/_az_cfg_suffix.h>
 
-#endif // _az_MQTT_H
+#endif // _az_MQTT5_H
