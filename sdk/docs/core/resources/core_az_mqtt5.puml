@@ -1,0 +1,102 @@
+@startuml
+
+abstract class az_mqtt5_common
+{
+    -_az_event_pipeline* pipeline;
+    ---
+    +{abstract}az_mqtt5_init(options)
+    +{abstract}az_mqtt5_outbound_connect(connect_data)
+    +{abstract}az_mqtt5_outbound_sub(subscribe_data)
+    +{abstract}az_mqtt5_outbound_pub(publish_data)
+    +{abstract}az_mqtt5_outbound_disconnect(disconnect_data)
+    ---
+    +az_mqtt5_inbound_recv(recv_data)
+    +az_mqtt5_inbound_connack(connack_data)
+    +az_mqtt5_inbound_suback(suback_data)
+    +az_mqtt5_inbound_puback(puback_data)
+    +az_mqtt5_inbound_disconnect(disconn_data)
+}
+
+abstract class az_mqtt5_property_bag_common
+{
+    -_az_mqtt5_property_bag* property_bag;
+    ---
+    +{abstract}az_mqtt5_property_bag_init(options)
+    +{abstract}az_mqtt5_property_bag_empty()
+    +{abstract}az_mqtt5_property_bag_string_append(type,string)
+    +{abstract}az_mqtt5_property_bag_stringpair_append(type,string_pair)
+    +{abstract}az_mqtt5_property_bag_byte_append(type,byte)
+    +{abstract}az_mqtt5_property_bag_int_append(type,int)
+    +{abstract}az_mqtt5_property_bag_binary_append(type,binary_data)
+    +{abstract}az_mqtt5_property_bag_string_read(type,string)
+    +{abstract}az_mqtt5_property_bag_stringpair_find(type,key,string_pair)
+    +{abstract}az_mqtt5_property_bag_byte_read(type,byte)
+    +{abstract}az_mqtt5_property_bag_int_read(type,int)
+    +{abstract}az_mqtt5_property_bag_binary_read(type,binary_data)
+    +{abstract}az_mqtt5_property_string_free(string)
+    +{abstract}az_mqtt5_property_stringpair_free(string_pair)
+    +{abstract}az_mqtt5_property_binarydata_free(binary_data)
+    ---
+    +az_mqtt5_property_string_get(string)
+    +az_mqtt5_property_stringpair_key_get(string_pair)
+    +az_mqtt5_property_stringpair_value_get(string_pair)
+    +az_mqtt5_property_binarydata_get(binary_data)
+}
+
+class az_mqtt5_mosquitto
+{
+    - az_mqtt5_options options;
+    - struct mosquitto* mosquitto_handle;
+    ---
+    +az_mqtt5_init(options)
+    +az_mqtt5_outbound_connect(connect_data)
+    +az_mqtt5_outbound_sub(subscribe_data)
+    +az_mqtt5_outbound_pub(publish_data)
+    +az_mqtt5_outbound_disconnect(disconnect_data)
+    ---
+    +az_mqtt5_property_bag_init(options)
+    +az_mqtt5_property_bag_empty()
+    +az_mqtt5_property_bag_string_append(type,string)
+    +az_mqtt5_property_bag_stringpair_append(type,string_pair)
+    +az_mqtt5_property_bag_byte_append(type,byte)
+    +az_mqtt5_property_bag_int_append(type,int)
+    +az_mqtt5_property_bag_binary_append(type,binary_data)
+    +az_mqtt5_property_bag_string_read(type,string)
+    +az_mqtt5_property_bag_stringpair_find(type,key,string_pair)
+    +az_mqtt5_property_bag_byte_read(type,byte)
+    +az_mqtt5_property_bag_int_read(type,int)
+    +az_mqtt5_property_bag_binary_read(type,binary_data)
+    +az_mqtt5_property_string_free(string)
+    +az_mqtt5_property_stringpair_free(string_pair)
+    +az_mqtt5_property_binarydata_free(binary_data)
+}
+
+enum az_mqtt5_property_type
+{
+  AZ_MQTT5_PROPERTY_TYPE_PAYLOAD_FORMAT_INDICATOR
+  AZ_MQTT5_PROPERTY_TYPE_MESSAGE_EXPIRY_INTERVAL
+  AZ_MQTT5_PROPERTY_TYPE_CONTENT_TYPE
+  AZ_MQTT5_PROPERTY_TYPE_RESPONSE_TOPIC
+  AZ_MQTT5_PROPERTY_TYPE_CORRELATION_DATA
+  AZ_MQTT5_PROPERTY_TYPE_USER_PROPERTY
+}
+
+enum az_event_type_mqtt5
+{
+  AZ_MQTT5_EVENT_CONNECT_REQ
+  AZ_MQTT5_EVENT_CONNECT_RSP
+  AZ_MQTT5_EVENT_DISCONNECT_REQ
+  AZ_MQTT5_EVENT_DISCONNECT_RSP
+  AZ_MQTT5_EVENT_PUB_RECV_IND
+  AZ_MQTT5_EVENT_PUB_REQ
+  AZ_MQTT5_EVENT_PUBACK_RSP
+  AZ_MQTT5_EVENT_SUB_REQ
+  AZ_MQTT5_EVENT_SUBACK_RSP
+}
+
+az_mqtt5_common <|-- az_mqtt5_mosquitto
+az_mqtt5_property_bag_common <|-- az_mqtt5_mosquitto
+az_mqtt5_common <- az_event_type_mqtt5
+az_mqtt5_property_bag_common <- az_mqtt5_property_type
+
+@enduml
