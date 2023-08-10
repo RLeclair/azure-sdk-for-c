@@ -36,7 +36,6 @@
 #include <azure/core/az_config.h>
 #include <azure/core/az_event.h>
 #include <azure/core/az_log.h>
-#include <azure/core/az_mqtt5_property_bag.h>
 #include <azure/core/az_result.h>
 #include <azure/core/az_span.h>
 #include <stdbool.h>
@@ -49,6 +48,13 @@
 #endif
 
 #include <azure/core/_az_cfg_prefix.h>
+
+	
+typedef enum			
+{
+    AZ_MQTT5_X509_CLIENT_CERTIFICATE_KEY_MEMORY = 0,
+    AZ_MQTT5_X509_CLIENT_CERTIFICATE_KEY_SECURITY_MODULE = 1,		
+} az_mqtt5_x509_client_certificate_key_type;
 
 /**
  * @brief x509 certificate definition.
@@ -72,11 +78,6 @@ typedef struct
  */
 typedef struct
 {
-  /**
-   * @brief The properties of the publish request.
-   */
-  az_mqtt5_property_bag* properties;
-
   /**
    * @brief The topic to publish to.
    */
@@ -107,11 +108,6 @@ typedef struct
 typedef struct
 {
   /**
-   * @brief The received properties.
-   */
-  az_mqtt5_property_bag* properties;
-
-  /**
    * @brief The topic the message was received on.
    */
   az_span topic;
@@ -139,11 +135,6 @@ typedef struct
 typedef struct
 {
   /**
-   * @brief The puback properties.
-   */
-  az_mqtt5_property_bag* properties;
-
-  /**
    * @brief The publish request ID.
    */
   int32_t id;
@@ -155,10 +146,6 @@ typedef struct
  */
 typedef struct
 {
-  /**
-   * @brief The properties of subscribe request.
-   */
-  az_mqtt5_property_bag* properties;
   /**
    * @brief Topic filter to subscribe to.
    */
@@ -182,11 +169,6 @@ typedef struct
 typedef struct
 {
   /**
-   * @brief The suback properties.
-   */
-  az_mqtt5_property_bag* properties;
-
-  /**
    * @brief The subscribe request ID.
    */
   int32_t id;
@@ -198,11 +180,6 @@ typedef struct
  */
 typedef struct
 {
-  /**
-   * @brief The properties of the connect request.
-   */
-  az_mqtt5_property_bag* properties;
-
   /**
    * @brief Hostname or IP address of the MQTT 5 broker.
    */
@@ -240,12 +217,6 @@ typedef struct
  */
 typedef struct
 {
-
-  /**
-   * @brief The properties of the connect acknowledgement.
-   */
-  az_mqtt5_property_bag* properties;
-
   /**
    * @brief Connection acknowledgement reason code. Indicates success or reason for failure.
    */

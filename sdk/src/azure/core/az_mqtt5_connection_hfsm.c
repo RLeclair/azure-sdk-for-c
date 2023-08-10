@@ -123,8 +123,7 @@ AZ_INLINE az_result _connect(az_mqtt5_connection* me)
     .username = me->_internal.options.username_buffer,
     .password = me->_internal.options.password_buffer,
     .certificate.cert = me->_internal.options.client_certificates[0].cert,
-    .certificate.key = me->_internal.options.client_certificates[0].key,
-    .properties = NULL,
+    .certificate.key = me->_internal.options.client_certificates[0].key
   };
 
   _az_RETURN_IF_FAILED(az_event_policy_send_outbound_event(

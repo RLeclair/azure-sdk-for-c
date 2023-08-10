@@ -79,32 +79,6 @@ struct az_mqtt5
   } _internal;
 };
 
-/**
- * @brief MQTT 5 property bag options for Mosquitto.
- *
- * @details This struct defines the MQTT 5 property bag options for Mosquitto. The property bag
- * is used to store MQTT 5 properties that can be sent with MQTT 5 messages.
- */
-typedef struct
-{
-  /**
-   * @brief Mosquitto specific MQTT 5 properties.
-   */
-  mosquitto_property* properties;
-} az_mqtt5_property_bag_options;
-
-/**
- * @brief MQTT 5 property bag.
- *
- */
-typedef struct
-{
-  /**
-   * @brief Mosquitto specific MQTT 5 properties.
-   */
-  mosquitto_property* properties;
-} az_mqtt5_property_bag;
-
 #include <azure/core/_az_cfg_suffix.h>
 
 #endif // _az_MQTT5_MOSQUITTO_H
