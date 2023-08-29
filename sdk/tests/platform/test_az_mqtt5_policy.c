@@ -24,7 +24,7 @@ void az_platform_critical_error(void) { assert_true(false); }
 
 // MQTT information for testing
 #define TEST_MQTT_ENDPOINT "127.0.0.1"
-#define TEST_MQTT_PORT 2883
+#define TEST_MQTT_PORT 2883 // 2883 should fail
 #define TEST_MQTT_USERNAME ""
 #define TEST_MQTT_PASSWORD ""
 #define TEST_MQTT_CLIENT_ID "test_client_id"
@@ -43,10 +43,12 @@ void az_platform_critical_error(void) { assert_true(false); }
 #define TEST_RESPONSE_DELAY_MS 100 // Response from endpoint is slow.
 
 #ifdef TRANSPORT_MOSQUITTO
-static struct mosquitto* test_mosquitto_handle = NULL;
-#else
-static void* test_mosquitto_handle = NULL;
-#endif // TRANSPORT_MOSQUITTO
+static struct mosquitto* test_impl_handle = NULL;
+#elif TRANSPORT_PAHO
+static MQTTAsync test_impl_handle;
+#else // TRANSPORT_NONE
+static void* test_impl_handle = NULL;
+#endif
 
 static az_mqtt5 test_mqtt5_client;
 static _az_mqtt5_policy test_mqtt5_policy;
@@ -93,6 +95,8 @@ static az_result test_inbound_hfsm_root(az_event_policy* me, az_event event)
   {
     case AZ_MQTT5_EVENT_CONNECT_RSP:
       ref_connack++;
+      az_mqtt5_connack_data* test_connack_data = (az_mqtt5_connack_data*)event.data;
+      assert_int_equal(test_connack_data->connack_reason, 0);
       break;
 
     case AZ_MQTT5_EVENT_SUBACK_RSP:
@@ -282,6 +286,9 @@ static void test_az_mqtt5_policy_init_success(void** state)
   ref_disconnect = 0;
   expect_msg_properties = 0;
 
+  options = az_mqtt5_options_default();
+  options.disable_tls = true;
+
   assert_int_equal(
       _az_hfsm_init(
           &test_inbound_hfsm,
@@ -308,7 +315,7 @@ static void test_az_mqtt5_policy_init_valid_success(void** state)
 {
   (void)state;
 
-  assert_int_equal(az_mqtt5_init(&test_mqtt5_client, &test_mosquitto_handle, &options), AZ_OK);
+  assert_int_equal(az_mqtt5_init(&test_mqtt5_client, &test_impl_handle, &options), AZ_OK);
 
   test_mqtt5_client._internal.platform_mqtt5.pipeline = &test_event_pipeline;
 }
@@ -329,7 +336,11 @@ static void test_az_mqtt5_policy_outbound_connect_success(void** state)
 
   assert_int_equal(ref_connack, 1);
 
-  assert_ptr_equal(*test_mqtt5_client._internal.mosquitto_handle, test_mosquitto_handle);
+#ifdef TRANSPORT_MOSQUITTO
+  assert_ptr_equal(*test_mqtt5_client._internal.mosquitto_handle, test_impl_handle);
+#elif TRANSPORT_PAHO
+  assert_ptr_equal(test_mqtt5_client._internal.pahoasync_handle, &test_impl_handle);
+#endif
 }
 
 static void test_az_mqtt5_policy_outbound_sub_success(void** state)
@@ -393,6 +404,8 @@ static void test_az_mqtt5_policy_outbound_pub_properties_success(void** state)
 
 #ifdef TRANSPORT_MOSQUITTO
   mosquitto_property* prop = NULL;
+#elif TRANSPORT_PAHO
+  MQTTProperties prop = MQTTProperties_initializer;
 #else // TRANSPORT_NONE
   void* prop = NULL;
 #endif
@@ -461,7 +474,7 @@ static void test_az_mqtt5_policy_outbound_pub_properties_success(void** state)
   assert_int_equal(az_mqtt5_outbound_pub(&test_mqtt5_client, &test_mqtt5_pub_data), AZ_OK);
 
   int retries = TEST_MAX_RESPONSE_CHECKS;
-  while (ref_puback == 0 && ref_recv == 0 && retries > 0)
+  while ((ref_puback == 0 || ref_recv == 0) && retries > 0)
   {
     assert_int_equal(az_platform_sleep_msec(TEST_RESPONSE_DELAY_MS), AZ_OK);
     retries--;

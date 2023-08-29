@@ -256,7 +256,7 @@ AZ_NODISCARD az_result
 az_mqtt5_outbound_connect(az_mqtt5* mqtt5, az_mqtt5_connect_data* connect_data)
 {
   az_result ret = AZ_OK;
-  az_mqtt5* me = (az_mqtt5*)mqtt5;
+  az_mqtt5* me = (az_mqtt5*)mqtt5; // TODO_L: Do we need this?
 
   // IMPORTANT: application must call mosquitto_lib_init() before any Mosquitto clients are created.
 

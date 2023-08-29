@@ -128,11 +128,18 @@ AZ_NODISCARD AZ_INLINE bool az_span_topic_matches_sub(az_span sub, az_span topic
 {
   bool ret;
   // TODO: have this not be mosquitto specific
+  // TODO_L: Create this function for things to work with paho async.
+#if defined(PLATFORM_MOSQUITTO)
   if (MOSQ_ERR_SUCCESS
       != mosquitto_topic_matches_sub((char*)az_span_ptr(sub), (char*)az_span_ptr(topic), &ret))
   {
     ret = false;
   }
+#else // PLATFORM_MOSQUITTO
+  (void)sub;
+  (void)topic;
+  ret = false;
+#endif
   return ret;
 }
 
